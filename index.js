@@ -19,7 +19,7 @@ app.use((req, res, next) => {
       "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
     );
     res.setHeader(
-      "Access-Control-Allow-Methods",
+      "Access-Control-Allow-Methods",   
       "GET, POST, PUT, DELETE, PATCH, OPTIONS"
     );
     next();
@@ -49,6 +49,7 @@ app.get('/',(req,res) => {
 })
 
 app.post('/register',(req,res) => {
+    console.log('In')
     bcrypt.hash(
         req.body.password,10
     ).then((hashedPassword) => {
@@ -60,17 +61,20 @@ app.post('/register',(req,res) => {
         });
         user
         .save().then((result) => {
+            console.log(result)
             res.status(201).send({
                 message:'User created succesfully',
                 result
             })
         }).catch((error) => {
+            console.log(error,'erorororr')
             res.status(500).send({
                 message:'Some error occured',
                 error
             })
         })
     }).catch(error => {
+        
         res.status(500).send({
             message:'Password was not hashed succesfully',
             error
@@ -84,14 +88,14 @@ app.post('/login',(req,res) => {
         console.log(user);
         bcrypt.compare(req.body.password,user.password).then(passwordcheck => {
             if(!passwordcheck){
-                res.status(400).send('Passwords do not match!');
+                return res.status(400).send('Passwords do not match!');
 
             }
             
             const token = jwt.sign({
                 data: user.email
               }, 'secret', { expiresIn: '24h' });
-            res.status(200).send({
+            return res.status(200).send({
                 message:'Login Succesful',
                 email:user.email,
                 Name:user.Name,
@@ -100,13 +104,15 @@ app.post('/login',(req,res) => {
                 
             })
         }).catch(error => {
-            res.status(400).send({
+            console.log(error)
+            return res.status(400).send({
                 message:'Some error occured',
                 error
             })
         }) 
     }).catch(error => {
-        res.status(404).send({
+        console.log(error);
+        return res.status(404).send({
             message:'Email not found',
             error
         })
