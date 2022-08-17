@@ -7,7 +7,7 @@ const auth = require('./auth');
 require('dotenv').config()
 const mongoose = require('mongoose')
 const Users = require('./DB/Models/Users.js');
-
+const Questions = require('./DB/Models/Questions.js');
 
 
 app.use(bodyParser.json())
@@ -57,7 +57,7 @@ app.post('/register',(req,res) => {
             Name:req.body.Name,
             email:req.body.email,
             password:hashedPassword,
-            Department:req.body.Department,
+            Field:req.body.Field,
         });
         user
         .save().then((result) => {
@@ -99,7 +99,7 @@ app.post('/login',(req,res) => {
                 message:'Login Succesful',
                 email:user.email,
                 Name:user.Name,
-                Department:user.Department,
+                Field:user.Field,
                 token
                 
             })
@@ -129,3 +129,25 @@ app.get("/free-endpoint", (request, response) => {
     response.json({ message: "You are authorized to access me" });
   });
 
+
+app.post('/question',auth,async(req,res) => {
+    let question = new Questions({
+        question:req.body.question,
+        Field:req.body.Field,
+        Username:req.body.Username,
+        Date: new Date()
+    })
+    question = question.save().then(result => {
+        console.log(result);
+        res.status(201).json({
+            message:'Question posted succesfully',
+            question:result
+        })
+    }).catch((error) => {
+        res.status(400).json({
+            message:'Some error occured',
+            error:error
+        })
+    })
+    
+})

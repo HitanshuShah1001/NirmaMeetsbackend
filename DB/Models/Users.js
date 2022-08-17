@@ -8,6 +8,12 @@ const UserSchema = new mongoose.Schema({
         required:true
     },
 
+    Username:{
+        type:String,
+        required:true,
+        unique:true
+    },
+
     email:{
         type:String,
         required:true,
@@ -19,7 +25,7 @@ const UserSchema = new mongoose.Schema({
         required:true
     },
 
-    Department:{
+    Field:{
         type:String,
     },
     
