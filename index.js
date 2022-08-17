@@ -57,7 +57,6 @@ app.post('/register',(req,res) => {
             email:req.body.email,
             password:hashedPassword,
             Department:req.body.Department,
-            birthdate:req.body.birthdate
         });
         user
         .save().then((result) => {
@@ -97,7 +96,6 @@ app.post('/login',(req,res) => {
                 email:user.email,
                 Name:user.Name,
                 Department:user.Department,
-                birthdate:user.birthdate,
                 token
                 
             })

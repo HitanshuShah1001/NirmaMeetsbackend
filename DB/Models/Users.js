@@ -22,11 +22,6 @@ const UserSchema = new mongoose.Schema({
     Department:{
         type:String,
     },
-
-    birthdate:{
-        type: Date,
-        required:true
-    },
     
 })
 
