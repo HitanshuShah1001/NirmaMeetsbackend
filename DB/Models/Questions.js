@@ -9,6 +9,11 @@ const QuestionSchema = new mongoose.Schema({
         required:true,
     },
 
+    Answers:{
+        type:Array,
+        default:[]
+    },
+
     question:{
         type:String,
         required:true,

@@ -46,14 +46,13 @@ app.get("/", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  Users.find({ email: req.body.email }).then((user) => {
-    console.log(user[0],user==[])
+  Users.find({ email: req.body.email.toLowerCase() }).then((user) => {
     if (user[0]!==undefined) {
-      return res.status(500).send({ message: "Email already registered!" });
+       res.send({ message: "Email already registered!" });
     } else {
       Users.find({ Username: req.body.Username }).then((user) => {
         if (user[0]!==undefined) {
-          return res.status(500).send({ message: "Username already exists" });
+           res.send({ message: "Username already exists" });
         } else {
           bcrypt
             .hash(req.body.password, 10)
@@ -61,7 +60,7 @@ app.post("/register", (req, res) => {
               const user = new Users({
                 Name: req.body.Name,
                 Username: req.body.Username,
-                email: req.body.email,
+                email: req.body.email.toLowerCase(),
                 password: hashedPassword,
                 Field: req.body.Field,
               });
@@ -93,6 +92,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+  console.log(req.body);
   Users.findOne({ email: req.body.email })
     .then((user) => {
       console.log(user);
@@ -100,7 +100,7 @@ app.post("/login", (req, res) => {
         .compare(req.body.password, user.password)
         .then((passwordcheck) => {
           if (!passwordcheck) {
-            return res.status(400).send("Passwords do not match!");
+            return res.send("Passwords do not match!");
           }
 
           const token = jwt.sign(
@@ -110,17 +110,19 @@ app.post("/login", (req, res) => {
             "secret",
             { expiresIn: "24h" }
           );
+          console.log(token);
           return res.status(200).send({
             message: "Login Succesful",
             email: user.email,
             Name: user.Name,
             Field: user.Field,
+            Username:user.Username,
             token,
           });
         })
         .catch((error) => {
           console.log(error);
-          return res.status(400).send({
+          return res.send({
             message: "Some error occured",
             error,
           });
@@ -140,7 +142,9 @@ app.get("/auth-endpoint", auth, (request, response) => {
   response.json({ message: "You are authorized to access me" });
 });
 
+
 app.post("/question", auth, async (req, res) => {
+  console.log(req.body);
   let question = new Questions({
     question: req.body.question,
     Field: req.body.Field,
@@ -157,6 +161,7 @@ app.post("/question", auth, async (req, res) => {
       });
     })
     .catch((error) => {
+      console.log(error);
       return res.status(400).json({
         message: "Some error occured",
         error: error,
@@ -185,3 +190,18 @@ app.post("/getemail", (req, res) => {
       console.log("Username not found", error);
     });
 });
+
+app.get('/getanswer/:id',(req,res) => {
+  
+})
+
+app.post('/addanswer/:id',(req,res) => {
+  Questions.findByIdAndUpdate(req.params.id,
+    {
+      "$push":{"Answers":req.body.answer}
+    },{new:true}).then(response => {
+      return res.send({message:'Answers updated',response})
+    }).catch(error => {
+      return res.status(400).send({message:error})
+    })
+})
