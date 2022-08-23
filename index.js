@@ -93,7 +93,7 @@ app.post("/register", (req, res) => {
 
 app.post("/login", (req, res) => {
   console.log(req.body);
-  Users.findOne({ email: req.body.email })
+  Users.findOne({ email: req.body.email.toLowerCase() })
     .then((user) => {
       console.log(user);
       bcrypt
@@ -170,6 +170,7 @@ app.post("/question", auth, async (req, res) => {
 });
 
 app.post("/getquestion", auth, async (req, res) => {
+  console.log('Getting question',req.body)
   Questions.find({ Field: req.body.Field })
     .then((response) => {
       return res.status(200).json({ message: response });
@@ -204,4 +205,13 @@ app.post('/addanswer/:id',(req,res) => {
     }).catch(error => {
       return res.status(400).send({message:error})
     })
+})
+
+
+app.post('/gettotalquestionsasked',auth,(req,res) => {
+  Questions.countDocuments({Username:req.body.Username}).then(count => {
+    return res.send({message:count})
+  }).catch(error => {
+    return res.status(400).send({message:error})
+  })
 })
