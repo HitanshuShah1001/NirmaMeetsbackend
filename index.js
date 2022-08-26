@@ -9,8 +9,39 @@ const mongoose = require("mongoose");
 const Users = require("./DB/Models/Users.js");
 const Questions = require("./DB/Models/Questions.js");
 const Answer = require("./DB/Models/Answers");
+const multer = require('multer');
+
+const FILE_TYPE_MAP = {
+  'image/png':'png',
+  'image/jpeg':'jpeg',
+  'image/jpg':'jpg',
+}
+
+
+var storage = multer.diskStorage({
+  destination: function(req,file,cb){
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    let uploadError = new Error('Invalid image type');
+    if(isValid){
+      uploadError = null;
+    }
+    cb(uploadError,'public/profilephotos')
+  },
+  filename: function (req,file,cb){
+    const fileName = file.originalname.split(' ').join('-');
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null,`${fileName}-${Date.now()}.${extension}`)
+  }
+})
+
+const uploadoptions = multer({storage:storage})
+
 
 app.use(bodyParser.json());
+app.use(express.static('public')); 
+
+app.use('/public', express.static('public'));
+
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -46,7 +77,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to Nirmameets!" });
 });
 
-app.post("/register", (req, res) => {
+app.post("/register", uploadoptions.single('Profilephoto'),(req, res) => {
   Users.find({ email: req.body.email.toLowerCase() }).then((user) => {
     if (user[0]!==undefined) {
        res.send({ message: "Email already registered!" });
@@ -58,11 +89,14 @@ app.post("/register", (req, res) => {
           bcrypt
             .hash(req.body.password, 10)
             .then((hashedPassword) => {
+              const fileName = req.file.filename
+              const basePath = `${req.protocol}://${req.get('host')}/public/profilephotos/`
               const user = new Users({
                 Name: req.body.Name,
                 Username: req.body.Username,
                 email: req.body.email.toLowerCase(),
                 password: hashedPassword,
+                Profilephoto:`${basePath}${fileName}`,
                 Field: req.body.Field,
               });
               user
