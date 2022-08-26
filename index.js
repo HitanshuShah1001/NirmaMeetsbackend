@@ -8,6 +8,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const Users = require("./DB/Models/Users.js");
 const Questions = require("./DB/Models/Questions.js");
+const Answer = require("./DB/Models/Answers");
 
 app.use(bodyParser.json());
 
@@ -139,8 +140,13 @@ app.post("/login", (req, res) => {
 
 // authentication endpoint
 app.get("/auth-endpoint", auth, (request, response) => {
+  response.json({ message: "You are  not authorized to access me" });
+});
+
+app.get("/noauth-endpoint",(request, response) => {
   response.json({ message: "You are authorized to access me" });
 });
+
 
 
 app.post("/question", auth, async (req, res) => {
@@ -170,7 +176,7 @@ app.post("/question", auth, async (req, res) => {
 });
 
 app.post("/getquestion", auth, async (req, res) => {
-  console.log('Getting question',req.body)
+
   Questions.find({ Field: req.body.Field })
     .then((response) => {
       return res.status(200).json({ message: response });
@@ -196,13 +202,23 @@ app.get('/getanswer/:id',(req,res) => {
   
 })
 
-app.post('/addanswer/:id',(req,res) => {
+app.post('/addanswer/:id',auth,(req,res) => {
+  console.log('In add answer',req.body);
+  Ans = {}
+  Ans[req.body.answer] = req.body.Username
+  let answer = new Answer({
+    Username:req.body.Username,
+    answer: req.body.answer
+  })
+  answer = answer.save();
   Questions.findByIdAndUpdate(req.params.id,
     {
-      "$push":{"Answers":req.body.answer}
+      "$push":{"Answers":Ans}
     },{new:true}).then(response => {
+      console.log(response);
       return res.send({message:'Answers updated',response})
     }).catch(error => {
+      console.log(error);
       return res.status(400).send({message:error})
     })
 })
@@ -210,6 +226,14 @@ app.post('/addanswer/:id',(req,res) => {
 
 app.post('/gettotalquestionsasked',auth,(req,res) => {
   Questions.countDocuments({Username:req.body.Username}).then(count => {
+    return res.send({message:count})
+  }).catch(error => {
+    return res.status(400).send({message:error})
+  })
+})
+
+app.post('/gettotalanswers',auth,(req,res) => {
+  Answer.countDocuments({Username:req.body.Username}).then(count => {
     return res.send({message:count})
   }).catch(error => {
     return res.status(400).send({message:error})
