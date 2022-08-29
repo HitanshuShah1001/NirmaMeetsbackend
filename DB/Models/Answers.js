@@ -12,7 +12,8 @@ const AnswerSchema = new mongoose.Schema({
     answer:{
         type:String,
         required:true
-    }
+    },
+
     
 })
 
