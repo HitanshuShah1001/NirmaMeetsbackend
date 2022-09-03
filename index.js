@@ -13,6 +13,12 @@ const Answer = require('./DB/Models/Answers')
 const multer = require('multer')
 const generateId = require('./Randomid')
 const { db } = require('./DB/Models/Users.js')
+const dotenv = require('dotenv');
+
+
+
+dotenv.config({path:'./.env'})
+
 const FILE_TYPE_MAP = {
   'image/png': 'png',
   'image/jpeg': 'jpeg',
@@ -60,7 +66,7 @@ const DB =
   'mongodb+srv://Hitanshu:hitz200110@cluster0.fpc53gv.mongodb.net/AuthNM?retryWrites=true&w=majority'
 
 mongoose
-  .connect(DB, {
+  .connect(process.env.DB, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -159,7 +165,7 @@ app.post('/login', (req, res) => {
           })
         })
         .catch((error) => {
-
+          console.log(error);
           return res.send({
             message: 'Some error occured',
             error,
@@ -167,6 +173,7 @@ app.post('/login', (req, res) => {
         })
     })
     .catch((error) => {
+      console.log(error);
       return res.status(404).send({
         message: 'Email not found',
         error,
@@ -288,7 +295,7 @@ app.post('/addupvote/:id', auth, (req, res) => {
     })
 })
 
-app.post('/removevote/:id',auth,(req, res) => {
+app.post('/adddownvote/:id',auth,(req, res) => {
   Questions.findOneAndUpdate({_id: req.params.id, 'Answers.id': req.body.id},
   { $inc: {'Answers.$.Votes': -1}}).then(response => {
     return res.send(response)
