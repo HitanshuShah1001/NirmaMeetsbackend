@@ -238,7 +238,6 @@ app.post('/getemail', (req, res) => {
 app.get('/getanswer/:id', (req, res) => {})
 
 app.post('/addanswer/:id', auth, (req, res) => {
-  console.log('In asnwer',req.body);
   let randomid = generateId(26, '123456789abcdefghi')
   Ans = {}
   Ans[req.body.answer] = req.body.Username
@@ -303,3 +302,24 @@ app.post('/adddownvote/:id',auth,(req, res) => {
     return res.status(400).send({message:'Some error occured',error})
   })
 })
+
+
+app.post('/checkemail',async(req,res) => {
+  
+  const user = await Users.findOne({email:req.body.email.toLowerCase()})
+  if(!user){
+    return res.status(400).send({message:'Please enter a valid email address'});
+  }
+  console.log(user,'Before');
+  return res.status(201).send({message:'Email found',user});
+})
+
+
+app.post('/forgotpassword/:id',async(req,res) => {
+  let newPassword = await bcrypt.hash(req.body.password,10)
+  const user = await Users.findByIdAndUpdate(req.params.id,{password:newPassword},{new:true})
+  console.log(user,'After');
+
+})
+
+
