@@ -319,28 +319,7 @@ app.post('/checkemail',async(req,res) => {
 })
 
 
-app.post('/verifyotp',async(req,res) => {
-  let data = await OTP.find({email:req.body.email,code:req.body.otpcode})
-  if(data.length!==0){
-    let currentTime = date.getTime()
-    let diff = data.expiresIn = currentTime;
-    if(diff < 0){
-      return res.status(400).send('Code has expired! Please request another one');
-    }
-    else {
-      return res.status(200).send('OTP Verification successful!');
-    }
-  }
-  else{
-    return res.status(400).send('Invalid OTP');
-  }
-})
 
-app.post('/changepassword',async(req,res) => {
-  let newpassword = await bcrypt.hash(req.body.password,10)
-  let user = await Users.findOneAndUpdate(req.body.email,{password:newpassword},{new:true})
-  console.log(user);
-})
 
 
 app.post('/sendemail',async(req,res) => {
@@ -362,6 +341,29 @@ app.post('/sendemail',async(req,res) => {
   else{
     return res.status(400).send('Email Id does not exist!');
   }
+})
+
+app.post('/verifyotp',async(req,res) => {
+  let data = await OTP.find({email:req.body.email,code:req.body.otpcode})
+  if(data.length!==0){
+    let currentTime = date.getTime()
+    let diff = data.expiresIn = currentTime;
+    if(diff < 0){
+      return res.status(400).send('Code has expired! Please request another one');
+    }
+    else {
+      return res.status(200).send('OTP Verification successful!');
+    }
+  }
+  else{
+    return res.status(400).send('Invalid OTP');
+  }
+})
+
+app.post('/changepassword',async(req,res) => {
+  let newpassword = await bcrypt.hash(req.body.password,10)
+  let user = await Users.findOneAndUpdate(req.body.email,{password:newpassword},{new:true})
+  console.log(user);
 })
 
 
