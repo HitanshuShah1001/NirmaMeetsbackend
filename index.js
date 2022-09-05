@@ -10,14 +10,18 @@ const mongoose = require('mongoose')
 const Users = require('./DB/Models/Users.js')
 const Questions = require('./DB/Models/Questions.js')
 const Answer = require('./DB/Models/Answers')
+const OTP = require('./DB/Models/OTP');
 const multer = require('multer')
 const generateId = require('./Randomid')
+const mail = require('./Sendemail');
 const { db } = require('./DB/Models/Users.js')
 const dotenv = require('dotenv');
 
 
 
 dotenv.config({path:'./.env'})
+
+var date = new Date();
 
 const FILE_TYPE_MAP = {
   'image/png': 'png',
@@ -315,11 +319,49 @@ app.post('/checkemail',async(req,res) => {
 })
 
 
-app.post('/forgotpassword/:id',async(req,res) => {
-  let newPassword = await bcrypt.hash(req.body.password,10)
-  const user = await Users.findByIdAndUpdate(req.params.id,{password:newPassword},{new:true})
-  console.log(user,'After');
+app.post('/verifyotp',async(req,res) => {
+  let data = await OTP.find({email:req.body.email,code:req.body.otpcode})
+  if(data.length!==0){
+    let currentTime = date.getTime()
+    let diff = data.expiresIn = currentTime;
+    if(diff < 0){
+      return res.status(400).send('Code has expired! Please request another one');
+    }
+    else {
+      return res.status(200).send('OTP Verification successful!');
+    }
+  }
+  else{
+    return res.status(400).send('Invalid OTP');
+  }
+})
 
+app.post('/changepassword',async(req,res) => {
+  let newpassword = await bcrypt.hash(req.body.password,10)
+  let user = await Users.findOneAndUpdate(req.body.email,{password:newpassword},{new:true})
+  console.log(user);
+})
+
+
+app.post('/sendemail',async(req,res) => {
+  const user = await Users.findOne({email:req.body.email.toLowerCase()})
+  if(user){
+    let code = Math.floor((Math.random()*10000) + 1);
+    let otp = new OTP({
+      email:req.body.email,
+      code,
+      expiresIn: date.getTime() + 3600*1000
+    });
+    let otpresponse = await otp.save();
+    if(otpresponse){
+      mail(req.body.email,code);
+      return res.status(200).json({message:`An email with otp has been sent to ${req.body.email}`})
+    }
+
+  }
+  else{
+    return res.status(400).send('Email Id does not exist!');
+  }
 })
 
 
