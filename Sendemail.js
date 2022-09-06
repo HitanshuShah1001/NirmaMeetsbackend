@@ -12,7 +12,7 @@ const mail = (email,otp) => {
 
     var mailOptions = {
         from: 'hitanshushah5@gmail.com',
-        to:'shubhshah050@gmail.com',
+        to:email,
         subject:'Sending email using nodejs',
         text:`Here is the OTP for changing your password ${otp}`
     }
