@@ -368,11 +368,19 @@ app.post("/verifyotp", async (req, res) => {
 });
 
 app.post("/changepassword", async (req, res) => {
+  console.log(req.body);
   let newpassword = await bcrypt.hash(req.body.password, 10);
   let user = await Users.findOneAndUpdate(
-    req.body.email,
+    {email:req.body.email},
     { password: newpassword },
-    { new: true }
-  );
-  console.log(user);
+    { new: true })
+
+    console.log(user);
+  // ).then((resp) => {
+  //   console.log(resp);
+  //   res.status(200).send({message:'Password updated succesfully'})
+  // }).catch(error => {
+  //   console.log(error);
+  //   res.status(400).send(error);
+  // })
 });
