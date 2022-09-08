@@ -216,7 +216,7 @@ app.post("/question", auth, async (req, res) => {
 });
 
 app.post("/getquestion", auth, async (req, res) => {
-  Questions.find({ Field: req.body.Field })
+  Questions.aggregate().addFields({"length":{"$size":'$Answers'}}).sort({"length":-1}).limit(5)
     .then((response) => {
       return res.status(200).json({ message: response });
     })
