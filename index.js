@@ -223,6 +223,10 @@ app.post("/getquestion", auth, async (req, res) => {
     .catch((error) => {
       return res.status(400).json({ message: "Some error occured" });
     });
+  
+
+    
+  
 });
 
 app.post("/getemail", (req, res) => {
@@ -264,6 +268,14 @@ app.post("/addanswer/:id", auth, (req, res) => {
     .catch((error) => {
       return res.status(400).send({ message: error });
     });
+});
+
+app.post('/deleteanswer/:id',auth,(req,res) => {
+  Questions.updateOne({_id:req.params.id},{"$pull": { "Answers" : { "id": req.body.id }}},{safe:true,multi:true}).then(response => {
+    return res.status(200).send({message:"Answer deleted succesfully"})
+  }).catch(error => {
+    return res.status(400).send({message:error})
+  })
 });
 
 app.post("/gettotalquestionsasked", auth, (req, res) => {
