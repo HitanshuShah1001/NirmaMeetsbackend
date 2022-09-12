@@ -216,18 +216,27 @@ app.post("/question", auth, async (req, res) => {
 });
 
 app.post("/getquestion", auth, async (req, res) => {
-  Questions.aggregate().addFields({"length":{"$size":'$Answers'}}).sort({"length":-1}).limit(5)
+  Questions.aggregate().addFields({"length":{"$size":'$Answers'}}).sort({"length":-1}).limit(10)
     .then((response) => {
+      console.log(response);
       return res.status(200).json({ message: response });
     })
     .catch((error) => {
+      console.log(error);
       return res.status(400).json({ message: "Some error occured" });
-    });
-  
-
-    
-  
+    }); 
 });
+
+app.post('/deletequestion/:id',auth,async(req,res) => {
+  Questions.findByIdAndDelete(req.params.id).then(response => {
+    console.log(response);
+    return res.status(200).send({message:'Question deleted succesfully',response})
+   
+  }).catch(error => {
+    console.log(error);
+    return res.status(400).send({message:'An error occured',error})
+  })
+})
 
 app.post("/getemail", (req, res) => {
   Users.find({
@@ -383,7 +392,7 @@ app.post("/changepassword", async (req, res) => {
   console.log(req.body);
   let newpassword = await bcrypt.hash(req.body.password, 10);
   let user = await Users.findOneAndUpdate(
-    {email:req.body.email},
+    {email:req.body.email.toLowerCase()},
     { password: newpassword },
     { new: true })
 
